@@ -179,7 +179,7 @@ def create_compression_retriever(embeddings, base_retriever, chunk_size=500, k=1
 
 
 
-def create_memory(memory_max_token=None,sessionid="mhvhtgn"):
+def create_memory(memory_max_token=None,sessionid="mhvhtaajgugn"):
     
     chat_message_history = AstraDBChatMessageHistory(
         session_id=sessionid,
@@ -271,21 +271,21 @@ vectorStore = create_vectorstore()
 embeddings = select_embeddings_model()
 base_retriever = Vectorstore_backed_retriever(vectorStore)
 retriever = create_compression_retriever(embeddings=embeddings,base_retriever=base_retriever)
-
+callbacks = StreamingStdOutCallbackHandler()
 qa = ConversationalRetrievalChain.from_llm(
-    # condense_question_prompt=standalone_question_prompt,
-    # combine_docs_chain_kwargs={'prompt': answer_prompt},
+    condense_question_prompt=standalone_question_prompt,
+    combine_docs_chain_kwargs={'prompt': prompt_qa},
     # llm=OpenAI(streaming=True,openai_api_key=openai_api_key,temperature=0.1,callbacks=[callbacks]),
     memory=create_memory("gpt-3.5-turbo"),
     retriever = retriever, 
-    llm=OpenAI(openai_api_key=openai_api_key,temperature=0.7),
-    combine_docs_chain_kwargs={'prompt': prompt_qa},
+    llm=OpenAI(streaming=True,openai_api_key=openai_api_key,temperature=0.7,callbacks=[callbacks]),
+    # combine_docs_chain_kwargs={'prompt': prompt_qa},
     chain_type= "stuff",
     verbose= False,
     return_source_documents=True,
     get_chat_history=lambda h : h,
 )
 
-retriever_output = qa({"question": "Can you give me details about STARBUS 47S ON LP712 FBV 45 DIESEL SCHOOL AC"})
+retriever_output = qa({"question": "what is the fuel capactity of Tata Signa 3118.T"})
 
 print(retriever_output['answer'])
